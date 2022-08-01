@@ -146,7 +146,7 @@ elif sidebar == "账号充值":
     st.subheader('测试环境-账号充值')
     ele_topup_host = st.selectbox(
         '选择测试环境)',
-        ('测试环境一','测试环境二','测试环境三','测试环境四','测试环境五')
+        ('测试环境一','测试环境二','测试环境三','测试环境四','测试环境五','开发环境')
     )
 
     ele_coin_type = st.selectbox(
@@ -165,6 +165,8 @@ elif sidebar == "账号充值":
         count = Ele_config.count4
     elif ele_topup_host == '测试环境五':
         count = Ele_config.count5
+    elif ele_topup_host == '开发环境':
+        count = Ele_config.count0
 
     txt_topup = st.text_area('请输入uid', value="请输入")
 
@@ -177,7 +179,7 @@ elif sidebar == "实名认证审批":
     st.subheader('测试环境-实名认证审批')
     ele_realname_host = st.selectbox(
         '选择测试环境',
-        ('测试环境一','测试环境二','测试环境三','测试环境四','测试环境五')
+        ('测试环境一','测试环境二','测试环境三','测试环境四','测试环境五','开发环境')
     )
 
     if ele_realname_host == '测试环境一':
@@ -190,6 +192,8 @@ elif sidebar == "实名认证审批":
         hosts_realname = Ele_config.host_test4
     elif ele_realname_host == '测试环境五':
         hosts_realname = Ele_config.host_test5
+    elif ele_realname_host == '开发环境':
+        hosts_realname = Ele_config.host_test0
 
     txt_realname = st.text_area('请输入uid，逗号分隔', value="请输入")
 

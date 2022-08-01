@@ -92,6 +92,7 @@ class Ele_Tools():
         liveCode_list = []
         # 遍历dict，执行开播&回调接口
         for j in range(len(list_uids)):
+            print('j:{}'.format(j))
             test_uid = list_uids[j]
             # 调用开播接口，获取对应字段
             url_start = 'http://'+Test_host+'/studio/startForTest'
@@ -140,11 +141,9 @@ class Ele_Tools():
                 st.write('开播失败，请检查账号是否已实名')
 
         for i in range(9999):
-            print(i)
-            time.sleep(3)
+            time.sleep(30)
             for k in range(len(list_uids)):
                 try:
-                    print(k)
                     test_uid_ack = list_uids[k]
                     liveCode_ack = liveCode_list[k]
                     url = 'http://' + Test_host + '/studio/ack'
@@ -307,11 +306,6 @@ class Ele_Tools():
             except:
                 st.error('异常啦！')
 
-
-
-
-
-
     def mysql_select(self,count,uid,ele_coin,ele_coin_type):
         list_uids = self.uids_deal(uid)
         count.ping(reconnect = True)
@@ -342,21 +336,29 @@ class Ele_Tools():
                     db1.execute("update wallet.wallet_8 set balance = '%s' where user_id = '%s'" % (ele_coin,userId))
                     db1.execute("update wallet.wallet_9 set balance = '%s' where user_id = '%s'" % (ele_coin,userId))
                     count.commit()
-                    st.write('充值完成,请查收，若充值未成功，联系维护人员')
+                    st.write('充值完成')
             except Exception as e:
                 st.error('充值失败~')
                 st.write(e)
 
 
 
-
-
 if __name__=='__main__':
-    ele = Ele_Tools()
-    host_test5 = 'http://showmetest5.elelive.cn:10009'
-    region = 'XM'
-    Test_uids = "Test12162713,Test12162758"
-    ele.live_premiere(host_test5,region,Test_uids)
+    # ele = Ele_Tools()
+    # host_test5 = 'http://showmetest5.elelive.cn:10009'
+    # region = 'XM'
+    # Test_uids = "Test12162713,Test12162758"
+    # ele.live_premiere(host_test5,region,Test_uids)
 
 
-
+    dev_host = 'http://192.168.50.5'
+    userId = 'Test00000692'
+    url = dev_host + '/user/getUserInfoDetailsBasic'
+    data = {
+        'userId':userId,
+    }
+    header = {
+        'Content-Type':'application/x-www-form-urlencoded'
+    }
+    res = requests.post(url,data=data,headers=header)
+    print(res.text)
