@@ -1,4 +1,5 @@
 # coding:gbk
+from tkinter import EXCEPTION
 import streamlit as st
 import requests
 import json
@@ -6,7 +7,9 @@ import random
 import re
 import time
 import pymysql
-
+import os
+import threading
+from ele_streampush import *
 
 class Ele_Tools():
     # 登录获取运营后台cookies
@@ -90,6 +93,7 @@ class Ele_Tools():
         list_uids = self.uids_deal(Test_uids)
 
         liveCode_list = []
+        pushStreamUrl_list = []
         # 遍历dict，执行开播&回调接口
         for j in range(len(list_uids)):
             print('j:{}'.format(j))
@@ -116,7 +120,8 @@ class Ele_Tools():
                     pushStreamUrl = json.loads(res_start.text)['detail']['pushStreamUrl']
                     pushStreamUrl_re = re.split(r'[?,\s]\s*', pushStreamUrl)[1]
                     streamId = json.loads(res_start.text)['detail']['streamId']
-                    st.text(userId+'开播成功')
+                    # st.success(userId+'开播成功,推流地址为: '+ pushStreamUrl)
+                    st.success(userId+'开播成功')
                     # 开播成功后，调用回调接口
                     url_back = 'http://'+Test_host+'/multi/studio/callback'
                     data_back = {
@@ -137,9 +142,21 @@ class Ele_Tools():
                     }
                     res_back = requests.post(url_back,json=data_back,headers=header_back)
                     liveCode_list.append(liveCode)
+                    pushStreamUrl_str = '"'+pushStreamUrl+'"'
+                    pushStreamUrl_list.append(pushStreamUrl_str)
+                else:
+                    st.error('开播失败，请检查账号是否已实名')
             except Exception as e:
                 st.write('开播失败，请检查账号是否已实名')
 
+
+        # 推流
+
+            stream_push = streamPush()
+            stream_push.threading_start(pushStreamUrl_list)
+
+
+        # 心跳循环
         for i in range(9999):
             time.sleep(30)
             for k in range(len(list_uids)):
