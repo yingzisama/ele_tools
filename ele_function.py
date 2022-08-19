@@ -30,7 +30,6 @@ class Ele_Tools():
             'smsCode':'1234',
             'userCode':'admin'
         }
-
         res = requests.post(url,data=data)
         cookies = res.cookies
         cookie = requests.utils.dict_from_cookiejar(cookies)
@@ -87,7 +86,7 @@ class Ele_Tools():
         except Exception as e:
             print(e)
 
-    # 批量模拟开播
+    # 批量模拟开播（推流）
     def live_premiere(self,Test_host,region,Test_uids):
         # 将输入框的uids从str转成dict
         list_uids = self.uids_deal(Test_uids)
@@ -156,6 +155,93 @@ class Ele_Tools():
             stream_push.threading_start(pushStreamUrl_list)
 
 
+        # 心跳循环
+        for i in range(9999):
+            time.sleep(30)
+            for k in range(len(list_uids)):
+                try:
+                    test_uid_ack = list_uids[k]
+                    liveCode_ack = liveCode_list[k]
+                    url = 'http://' + Test_host + '/studio/ack'
+                    data = {
+                        'liveCode':liveCode_ack,
+                    }
+                    header = {
+                        'uid':test_uid_ack,
+                        'Content-Type':'application/x-www-form-urlencoded'
+                    }
+                    while True:
+                        try:
+                            res = requests.post(url,data=data,headers=header,timeout=5)
+                            break
+                        except Exception as e:
+                            # st.write('心跳接口请求异常:'+e)
+                            time.sleep(5)
+                            # continue
+                except Exception as e:
+                    print(e)
+
+    # 批量模拟开播（不推流）
+    def live_premiere2(self,Test_host,region,Test_uids):
+        # 将输入框的uids从str转成dict
+        list_uids = self.uids_deal(Test_uids)
+
+        liveCode_list = []
+        pushStreamUrl_list = []
+        # 遍历dict，执行开播&回调接口
+        for j in range(len(list_uids)):
+            print('j:{}'.format(j))
+            test_uid = list_uids[j]
+            # 调用开播接口，获取对应字段
+            url_start = 'http://'+Test_host+'/studio/startForTest'
+            data_start = {
+            "channelType": 0,
+            "coverId": "",
+            "title": "模拟开播直播间",
+            "userId": test_uid
+            }
+            header_start = {
+                'region': region,
+                'uid':test_uid,
+                'AppVersion':'4.30.0',
+                'Content-Type':'application/json'
+            }
+            try:
+                res_start = requests.post(url_start,json=data_start,headers=header_start)
+                if json.loads(res_start.text)['code'] == 0:
+                    userId = json.loads(res_start.text)['detail']['user']['userId']
+                    liveCode = json.loads(res_start.text)['detail']['liveCode']
+                    pushStreamUrl = json.loads(res_start.text)['detail']['pushStreamUrl']
+                    pushStreamUrl_re = re.split(r'[?,\s]\s*', pushStreamUrl)[1]
+                    streamId = json.loads(res_start.text)['detail']['streamId']
+                    # st.success(userId+'开播成功,推流地址为: '+ pushStreamUrl)
+                    st.success(userId+'开播成功')
+                    # 开播成功后，调用回调接口
+                    url_back = 'http://'+Test_host+'/multi/studio/callback'
+                    data_back = {
+                            "eventType":1,
+                            "sign":"98a7d2dadf3475d33264bc9acee2ea4a",
+                            "t":1652083093,
+                            "appId":34772,
+                            "userId":userId,
+                            "extraString":liveCode,
+                            "streamId":streamId,
+                            "streamParam":pushStreamUrl_re,
+                            "channelType":0,
+                            "sequence":"835091404392722190",
+                            "eventTime":1652082493000
+                            }
+                    header_back = {
+                        'Content-Type':'application/json'
+                    }
+                    res_back = requests.post(url_back,json=data_back,headers=header_back)
+                    liveCode_list.append(liveCode)
+                    pushStreamUrl_str = '"'+pushStreamUrl+'"'
+                    pushStreamUrl_list.append(pushStreamUrl_str)
+                else:
+                    st.error('开播失败，请检查账号是否已实名')
+            except Exception as e:
+                st.write('开播失败，请检查账号是否已实名')
         # 心跳循环
         for i in range(9999):
             time.sleep(30)
@@ -358,24 +444,59 @@ class Ele_Tools():
                 st.error('充值失败~')
                 st.write(e)
 
+    def mock_audiences(self,cookies,host,mock_host,anchorId,userids):
+        list_uids = self.uids_deal(userids)
+        url = mock_host+'/live/playing/list'
+        data = {
+            "page": 1,
+            "size": 10,
+            "roomId": "",
+            "userId": anchorId,
+            "nickname": "",
+            "signed": "",
+            "associationId": "",
+            "rank": "",
+            "regionType": ""
+        }
+        header = {
+            'Host': mock_host.replace('http://',''),
+            'Referer': mock_host + 'router/livevideo/playing',
+            'Cookie': cookies,
+        }
+        try:
+            res = requests.post(url,json=data,headers=header)
+            res_text = res.text
+            res_livecode = json.loads(res_text)['items'][0]['liveCode']
+        except EXCEPTION as e:
+            st.error(e)
+
+        for i in range(len(list_uids)):
+            userId = list_uids[i]
+            url_mock ='http://'+ host + '/studio/chatroom/testMemberOnJoin'
+            header_mock = {
+                'Content-Type': 'application/json',
+                'Host': host.replace('http://',''),
+                'Origin': host,
+                'uid': userId,
+            }    
+            data_mock = {
+                "groupId": anchorId + '_' + res_livecode,
+                "userId": userId
+            }
+            res_mock_audiences = requests.post(url_mock,json=data_mock,headers=header_mock)
+            st.write(res_mock_audiences.text)
 
 
+
+        
 if __name__=='__main__':
-    # ele = Ele_Tools()
-    # host_test5 = 'http://showmetest5.elelive.cn:10009'
-    # region = 'XM'
-    # Test_uids = "Test12162713,Test12162758"
-    # ele.live_premiere(host_test5,region,Test_uids)
+    ele = Ele_Tools()
+    host_test = 'http://showmetest3.elelive.cn:10009'
+    host = 'http://studio03.svc.elelive.cn'
+    cookie = ele.login(host_test)
+    anchorId = "10003673"
+    # userids = '10011960,10004711,10008157,10009681,10003347,10007518,10003349,10000984,10001169,10000561'
+    userids = '10002775'
+    ele.mock_audiences(cookie,host,host_test,anchorId,userids)
 
 
-    dev_host = 'http://192.168.50.5'
-    userId = 'Test00000692'
-    url = dev_host + '/user/getUserInfoDetailsBasic'
-    data = {
-        'userId':userId,
-    }
-    header = {
-        'Content-Type':'application/x-www-form-urlencoded'
-    }
-    res = requests.post(url,data=data,headers=header)
-    print(res.text)

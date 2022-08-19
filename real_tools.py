@@ -23,7 +23,7 @@ st.markdown(hide_streamlit_style, unsafe_allow_html=True)
 # 左边导航栏
 sidebar = st.sidebar.radio(
     "功能导航",
-    ("首页", '获取可开播uid',"直播间开播","直播间关播", "账号充值", "实名认证审批",'查询账号手机号')
+    ("首页", '获取可开播uid',"直播间开播(推流)","直播间开播(不推流)","直播间关播", "账号充值", "实名认证审批",'查询账号手机号',"直播间模拟在线观众")
 )
 
 # 可开播uid
@@ -73,11 +73,12 @@ if sidebar == "获取可开播uid":
 
 
 # 设置直播间开播页面展示
-elif sidebar == "直播间开播":
+elif sidebar == "直播间开播(推流)":
     st.title('Elelive_TestTools')
 
     # 展示二级标题
-    st.subheader('测试环境-模拟用户开播')
+    st.subheader('测试环境-模拟用户开播(推流)')
+    st.write('推流直播比较占资源，请不要大量开启推流直播~')
     ele_host_start = st.selectbox(
         '选择测试环境',
         ('测试环境一','测试环境二','测试环境三','测试环境四','测试环境五')
@@ -115,6 +116,50 @@ elif sidebar == "直播间开播":
 
     if st.button('确定'):
         Ele_Tools().live_premiere(hosts_start,option_start,txt_start)
+
+# 设置直播间开播页面展示
+elif sidebar == "直播间开播(不推流)":
+    st.title('Elelive_TestTools')
+
+    # 展示二级标题
+    st.subheader('测试环境-模拟用户开播(不推流)')
+    ele_host_start = st.selectbox(
+        '选择测试环境',
+        ('测试环境一','测试环境二','测试环境三','测试环境四','测试环境五')
+    )
+
+    if ele_host_start == '测试环境一':
+        hosts_start = Ele_config.host_start1
+    elif ele_host_start == '测试环境二':
+        hosts_start = Ele_config.host_start2
+    elif ele_host_start == '测试环境三':
+        hosts_start = Ele_config.host_start3
+    elif ele_host_start == '测试环境四':
+        hosts_start = Ele_config.host_start4
+    elif ele_host_start == '测试环境五':
+        hosts_start = Ele_config.host_start5
+
+    test_origin_start = st.selectbox(
+            '选择开播地区',
+            ('马来西亚', '新加坡','台湾' ,'越南','印尼','马来非华语'))
+
+    if test_origin_start == '马来西亚':
+        option_start = 'XM'
+    elif test_origin_start == '新加坡':
+        option_start = 'SG'
+    elif test_origin_start == '台湾':
+        option_start = 'TW'
+    elif test_origin_start == '越南':
+        option_start = 'VN'
+    elif test_origin_start == '印尼':
+        option_start = 'ID'
+    elif test_origin_start == '马来非华语':
+        option_start = 'MS'
+
+    txt_start = st.text_area('请输入uid，逗号分隔', value="请输入")
+
+    if st.button('确定'):
+        Ele_Tools().live_premiere2(hosts_start,option_start,txt_start)
 
 # 设置直播间关播页面展示
 elif sidebar == "直播间关播":
@@ -225,6 +270,35 @@ elif sidebar == "查询账号手机号":
     if st.button('确定'):
         Ele_Tools().select_phoneNum(hosts_phone,txt_phone)
 
+# 直播间模拟在线观众
+elif sidebar == "直播间模拟在线观众":
+    st.title('Elelive_TestTools')
+    st.subheader('测试环境-直播间模拟在线观众(无心跳，仅展示几分钟)')
+    ele_mock_audiences_host = st.selectbox(
+        '选择测试环境',
+        ('测试环境一','测试环境二','测试环境三','测试环境四','测试环境五')
+    )
+
+    if ele_mock_audiences_host == '测试环境一':
+        hosts_mock_audiences = Ele_config.host_start1
+        hosts_test = Ele_config.host_test1
+    elif ele_mock_audiences_host == '测试环境二':
+        hosts_mock_audiences = Ele_config.host_start2
+        hosts_test = Ele_config.host_test2
+    elif ele_mock_audiences_host == '测试环境三':
+        hosts_mock_audiences = Ele_config.host_start3
+        hosts_test = Ele_config.host_test3
+    elif ele_mock_audiences_host == '测试环境四':
+        hosts_mock_audiences = Ele_config.host_start4
+        hosts_test = Ele_config.host_test4
+    elif ele_mock_audiences_host == '测试环境五':
+        hosts_mock_audiences = Ele_config.host_start5
+        hosts_test = Ele_config.host_test5
+
+    txt_anchor = st.text_area('请输入直播间主播id', value="请输入")
+    txt_audiences = st.text_area('请输入观众的uid，逗号分隔', value="请输入")
+    if st.button('确定'):
+        Ele_Tools().mock_audiences(Ele_Tools().login(hosts_test),hosts_mock_audiences,hosts_test,txt_anchor,txt_audiences)
 
 
 # 设置首页页面展示

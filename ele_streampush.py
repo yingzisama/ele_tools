@@ -14,7 +14,7 @@ class streamPush():
 
     def threading_start(self,rtmpURL):
         if_parallel = True
-        cmds = [r'ffmpeg -re -i D:\workspace_new\st_tools\ele_tools\1.mp4 -vcodec libx264 -acodec aac -f flv '+rtmp for rtmp in rtmpURL]
+        cmds = [r'ffmpeg -y -loop 1 -re -i D:\workspace_new\st_tools\ele_tools\1.mp4 -vcodec libx264 -acodec aac -f flv '+rtmp for rtmp in rtmpURL]
         print(cmds)
         if if_parallel:
             threads = []
