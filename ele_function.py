@@ -113,6 +113,7 @@ class Ele_Tools():
             }
             try:
                 res_start = requests.post(url_start,json=data_start,headers=header_start)
+                print(res_start.text)
                 if json.loads(res_start.text)['code'] == 0:
                     userId = json.loads(res_start.text)['detail']['user']['userId']
                     liveCode = json.loads(res_start.text)['detail']['liveCode']
